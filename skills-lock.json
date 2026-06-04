@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "midnight-compact": {
+      "source": "mzf11125/midnight_agent_skills",
+      "sourceType": "github",
+      "skillPath": "midnight-compact/SKILL.md",
+      "computedHash": "549a10404d0553a5ae84c8bc5555faa1814eb9a5df39c9d4d13b459bf75f84a4"
+    },
+    "midnight-concepts": {
+      "source": "mzf11125/midnight_agent_skills",
+      "sourceType": "github",
+      "skillPath": "midnight-concepts/SKILL.md",
+      "computedHash": "e2fc1927cd52b279e906be91679181649d7bc759c88b891bda9b4683b56a451f"
+    },
+    "midnight-network": {
+      "source": "mzf11125/midnight_agent_skills",
+      "sourceType": "github",
+      "skillPath": "midnight-network/SKILL.md",
+      "computedHash": "2fae0ae701ea42e569870a944ab84012cd854a9c1d95641b0cc9edabcfdfffee"
+    },
+    "midnightskill": {
+      "source": "Kali-Decoder/Midnight-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "7529b562d78aceab69d7c7ccf82ed1b974849dd4bc3c05db0b6437029a8d87fd"
+    },
+    "tailwindcss": {
+      "source": "fractionestate/midnight-dev-skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/tailwindcss/SKILL.md",
+      "computedHash": "da1e129ee0e23bd6e66fc1c45a60e62b6e3f770ef327c01e58e085ef04fd2925"
+    }
+  }
+}
