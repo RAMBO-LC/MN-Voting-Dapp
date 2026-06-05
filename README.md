@@ -1,98 +1,319 @@
-#midnight Packages
+# 🗳️ Private Voting DApp — Midnight Network
 
-## [Reference](https://github.com/Midnight-Labs/midnight-reference)
+> Anonymous multi-poll governance with ZK voter identity protection and admin-controlled polls, built on the [Midnight Network](https://midnight.network).
 
-```bash
-npx create-mn-app midnight-reference
+[![Built on Midnight](https://img.shields.io/badge/Built%20on-Midnight%20Network-6C3CE1?style=flat-square)](https://midnight.network)
+[![Language](https://img.shields.io/badge/Contract-Compact%200.23-blue?style=flat-square)](https://docs.midnight.network/compact)
+[![Network](https://img.shields.io/badge/Network-Preprod%20Testnet-orange?style=flat-square)](https://faucet.preprod.midnight.network)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green?style=flat-square)](./LICENSE)
+
+---
+
+## What is this?
+
+A fully privacy-preserving voting application on the Midnight blockchain. Anyone can cast votes on active polls — **what they vote for is visible, but who voted is permanently hidden** using Zero Knowledge (ZK) proofs.
+
+The admin deploys the contract, creates polls, and can close them. Voters connect with their wallet seed, pick an option, and submit a ZK-proven anonymous vote. No identity, no tracking, no leaks.
+
+---
+
+## How the Privacy Works
+
+Midnight's Compact language compiles smart contract logic into ZK circuits. When you vote:
+
+1. Your wallet's `localSecretKey()` is used locally to derive a **voter commitment** — a one-way cryptographic hash
+2. That commitment (not your key or address) is stored on-chain to prevent double-voting
+3. A ZK proof is generated locally by the proof server, proving you followed the rules without revealing *who* you are
+4. The proof is submitted to Preprod — your identity never leaves your machine
+
+```
+Voter identity  →  [ZK Circuit]  →  Commitment stored on-chain
+(stays private)       (local)        (mathematically unlinkable)
 ```
 
+---
 
+## Project Structure
 
-# Midnight Skills
+```
+private-voting-dapp/
+├── contracts/
+│   └── voting.compact          # Compact smart contract (ZK circuits)
+├── src/
+│   ├── deploy.ts               # Deploy contract to Preprod
+│   ├── cli.ts                  # Interactive CLI (admin + voter)
+│   └── voting-api.ts           # Reusable TypeScript API layer
+├── frontend/
+│   └── index.html              # Single-file HTML/JS UI (no framework)
+├── docker-compose.yml          # Proof server config
+├── package.json
+├── tsconfig.json
+└── deployment.json             # Auto-generated after deploy
+```
 
-Knowledge skills for AI agents building on Midnight Network. Each skill is a standalone markdown file that agents fetch and read into their context.
-
-## Skills
-
-| Skill | Description |
-|-------|-------------|
-| [1AM Wallet](1am-wallet/SKILL.md) | Integrate the 1AM browser wallet for dust-free contract deployment and transaction flow |
-| [Compact](compact/SKILL.md) | The Compact smart contract language — TypeScript-like DSL that compiles to ZK circuits |
-| [Midnight.js](midnight-js/SKILL.md) | TypeScript SDK — provider wiring, wallet SDK, contract deployment, DUST flow, testkit |
-| [Testing](testing/SKILL.md) | Debug Compact contracts, read compiler errors, manage versions, avoid common traps |
-| [Multinetwork](multinetwork/SKILL.md) | Deploy a single dApp across all networks (localnet, preview, preprod, mainnet) from one codebase |
-| [Indexer](indexer/SKILL.md) | Query blockchain data via GraphQL, watch contract state, subscribe to real-time events |
-| [Security](security/SKILL.md) | Privacy audit checklist, data leak patterns, defensive Compact patterns |
-| [Example Hello World](example-hello-world/SKILL.md) | Build a complete Midnight Network hello-world DApp from scratch using Compact smart contract, headless Node.js tests with vitest, and testkit-js FluentWalletBuilder. |
-| [Example Counter](example-counter/SKILL.md) | Complete DApp reference — headless wallet, CLI, counter contract, DUST, deploy |
-| [NFT](nft/SKILL.md) | Build NFTs (shielded + unshielded) with OpenZeppelin and native Midnight functions |
-| [Token Transfers](token-transfers/SKILL.md) | Shielded and unshielded token transfers, balance flows, multi-party transactions |
-| [Example Payment Dapp](example-payment-dapp/SKILL.md) | Build a privacy-preserving payment vault: users deposit/withdraw tNIGHT through a Compact smart contract with zero gas fees via the 1AM wallet. |
-| [Why Midnight](why-midnight/SKILL.md) | Midnight's architecture, privacy model, selective disclosure, and ZK proofs |
-
-## Architecture
-
-- **Frontend:** Static HTML landing page (`index.html`)
-- **API:** Vercel serverless functions (`api/`)
-- **Database:** MongoDB (anonymous download tracking)
-- **Skills:** Markdown files served via Vercel routes through a tracking function
+---
 
 ## Prerequisites
 
-- Node.js >= 22
-- A MongoDB database (Atlas or self-hosted)
-- A [Vercel](https://vercel.com) account for deployment
+| Tool | Version | Purpose |
+|------|---------|---------|
+| [Node.js](https://nodejs.org) | v22+ | Runtime |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Latest | Proof server |
+| [Compact compiler](https://docs.midnight.network/getting-started/installation) | Latest | Contract compilation |
+| Linux or macOS | — | WSL2 works on Windows |
+
+> ⚠️ **Windows native is not supported.** Use WSL2.
+
+Install the Compact compiler:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+
+source ~/.bashrc   # or ~/.zshrc
+compact --version  # verify
+```
+
+---
 
 ## Setup
 
-```bash
-# Install dependencies
-npm install
+### 1. Clone the repo
 
-# Set environment variables (see .env.example)
-cp .env.example .env
-# Edit .env with your values
+```bash
+git clone https://github.com/YOUR_USERNAME/private-voting-dapp.git
+cd private-voting-dapp
 ```
 
-### Environment Variables
+### 2. Install dependencies
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGODB_URI` | Yes | MongoDB connection string |
-| `MONGODB_DB` | No | Database name (default: `midnight-skills`) |
-| `STATS_SECRET` | Yes | Secret key to access `/api/stats` |
-| `SUPABASE_URL` | No | Supabase project URL (enables `/api/track` + `/api/analytics`) |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service role key (server-side only) |
-| `ANALYTICS_SECRET` | No | (Deprecated) `/api/analytics` is public now |
-| `ANALYTICS_IP_SALT` | No | Salt for daily IP hashing (recommended) |
+```bash
+npm install
+```
 
-### Database Setup
+### 3. Start the proof server
 
-Create a MongoDB database (Atlas or self-hosted). The app will create the
-`skill_downloads` collection automatically on first insert.
+The proof server generates ZK proofs locally. It must be running before deploying or voting.
 
-## Deployment
+```bash
+npm run proof-server
+# or manually:
+docker compose up -d
+```
 
-The site deploys to Vercel. Push to `main` to trigger a deploy.
+Verify it's healthy:
+```bash
+curl http://localhost:6300/health
+# → {"status":"ok"}
+```
 
-Ensure `MONGODB_URI` and `STATS_SECRET` are set in your Vercel project environment variables.
+### 4. Compile the contract
 
-### Optional: Supabase Analytics
+```bash
+npm run compile
+```
 
-- Apply `supabase/analytics_schema.sql` in your Supabase SQL editor.
-- Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel.
-- Open `analytics.html` to view usage.
+This outputs compiled artifacts to `contracts/managed/voting/`.
+
+### 5. Deploy to Preprod
+
+```bash
+npm run deploy
+```
+
+On first run, you'll be prompted to create a new wallet. The CLI will:
+- Generate a wallet seed — **save this somewhere safe**
+- Display your wallet address
+- Wait for you to fund it from the [Preprod faucet](https://faucet.preprod.midnight.network)
+- Auto-generate tDUST for transaction fees
+- Deploy the contract and save the address to `deployment.json`
+
+---
+
+## Fund Your Wallet
+
+After running `npm run deploy`, copy your **unshielded address** from the output and visit:
+
+👉 **[https://faucet.preprod.midnight.network](https://faucet.preprod.midnight.network)**
+
+Paste your address and request tNIGHT tokens. Wait 1–2 minutes for confirmation, then the deploy script resumes automatically.
+
+---
+
+## Usage
+
+### CLI (Admin + Voter)
+
+```bash
+npm run cli
+```
+
+**If your wallet is the admin** (the deployer), you'll see:
+```
+1. Create new poll
+2. Close a poll
+3. View all polls
+4. Exit
+```
+
+**All other wallets** see the voter menu:
+```
+1. View all polls
+2. Cast a vote
+3. Exit
+```
+
+#### Create a poll (admin)
+Enter a question and 2–4 options. The poll goes live immediately on-chain.
+
+#### Cast a vote
+Select an open poll, pick your option. The CLI:
+1. Generates your voter commitment locally
+2. Checks you haven't already voted on this poll
+3. Creates a ZK proof via the proof server
+4. Submits the transaction to Preprod
+5. Displays the updated tally
+
+#### Close a poll (admin)
+Marks a poll as closed. Votes can no longer be cast on it.
+
+---
+
+### Frontend UI
+
+Open `frontend/index.html` directly in your browser — no build step needed.
+
+```bash
+# macOS
+open frontend/index.html
+
+# Linux / WSL2
+explorer.exe frontend/index.html
+```
+
+Enter your contract address and wallet seed from `deployment.json` to connect. The UI polls for updates every 10 seconds and shows live vote tallies.
+
+> 🔒 Your wallet seed is held **in memory only** — it is never stored in the browser or sent anywhere.
+
+---
+
+## Smart Contract Overview
+
+The contract is written in **Compact** (`contracts/voting.compact`), Midnight's ZK smart contract language.
+
+### Public on-chain state
+| Field | Type | Description |
+|-------|------|-------------|
+| `admin` | `Bytes<32>` | Cryptographic commitment of the deployer — gates admin actions |
+| `pollCount` | `Counter` | Total polls created |
+| `polls` | `Map<Field, PollData>` | All poll data indexed by poll number |
+
+### Each poll stores
+- Question text, option labels (up to 4), option vote counts
+- `isOpen` — whether voting is active
+- A Merkle tree of voter commitments (prevents double-voting without revealing identities)
+
+### Circuits (contract functions)
+| Circuit | Who can call | What it does |
+|---------|-------------|--------------|
+| `createPoll(...)` | Admin only | Creates a new poll with 2–4 options |
+| `castVote(pollIndex, optionIndex)` | Anyone | Casts an anonymous vote via ZK proof |
+| `closePoll(pollIndex)` | Admin only | Closes a poll permanently |
+
+### Privacy guarantee
+The `localSecretKey()` witness is **never disclosed, never sent on-chain, never included in any proof**. It only exists on the voter's local machine during circuit execution.
+
+---
+
+## npm Scripts
+
+| Script | What it does |
+|--------|-------------|
+| `npm run proof-server` | Starts Docker proof server on port 6300 |
+| `npm run compile` | Compiles `voting.compact` → `contracts/managed/voting/` |
+| `npm run deploy` | Deploys contract to Preprod, saves `deployment.json` |
+| `npm run cli` | Starts interactive CLI |
+| `npm run setup` | Does all of the above in sequence |
+
+---
+
+## Troubleshooting
+
+**`compact: command not found`**
+Re-source your shell after installing the Compact toolchain:
+```bash
+source ~/.bashrc
+```
+
+**`curl: (7) Failed to connect to localhost port 6300`**
+The proof server isn't running. Start it:
+```bash
+docker compose up -d
+```
+
+**`No such file or directory: deployment.json`**
+You haven't deployed yet. Run `npm run deploy` first.
+
+**`failed assert: already voted`**
+Your wallet has already voted on this poll. Each wallet can vote once per poll.
+
+**`failed assert: board is occupied` / admin assertion fails**
+Your wallet seed doesn't match the admin. Only the deployer wallet can create and close polls.
+
+**WSL2: file not found errors with Windows paths**
+Keep your project inside WSL's filesystem (`~/projects/...`), not on `/mnt/c/...`. Cross-filesystem I/O is slow and can cause path issues.
+
+---
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────┐
+│              Frontend (index.html)           │
+│         Vanilla JS — no framework            │
+└──────────────────┬──────────────────────────┘
+                   │ calls
+┌──────────────────▼──────────────────────────┐
+│           voting-api.ts (TypeScript)         │
+│    deploy · vote · createPoll · getPolls     │
+└────────┬────────────────────┬───────────────┘
+         │                    │
+┌────────▼────────┐  ┌────────▼────────────────┐
+│  Proof Server   │  │   Midnight Preprod        │
+│  localhost:6300 │  │   (Indexer + Node)        │
+│  (Docker)       │  │                           │
+│  Generates ZK   │  │  voting.compact deployed  │
+│  proofs locally │  │  Ledger state on-chain    │
+└─────────────────┘  └───────────────────────────┘
+```
+
+---
+
+## Contributing
+
+PRs welcome. If you find a bug or want to extend the contract (e.g. time-locked polls, token-gated voting), open an issue first so we can discuss the approach.
+
+Before submitting, make sure:
+- The contract compiles: `npm run compile`
+- At least one vote transaction works end-to-end on Preprod
+- No wallet seeds or private keys are committed to the repo
+
+---
+
+## Resources
+
+- [Midnight Docs](https://docs.midnight.network)
+- [Compact Language Reference](https://docs.midnight.network/compact)
+- [Bulletin Board Example](https://docs.midnight.network/examples/dapps/bboard) — the ZK pattern this project builds on
+- [Preprod Faucet](https://faucet.preprod.midnight.network)
+- [Midnight Discord](https://discord.com/invite/midnightnetwork)
+
+---
 
 ## License
 
-MIT License
+Apache 2.0 — see [LICENSE](./LICENSE)
 
-Copyright 2026 Tusharpamnani, Kali-Decoder
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# Midnight-statrter-pack
-# MN-Voting-Dapp
+*Built on [Midnight Network](https://midnight.network) — programmable privacy for the real world.*  
